@@ -1,0 +1,66 @@
+/* ================================================
+   SILOÉ — Estilos globales
+   Variables de diseño, reset y base
+================================================ */
+
+:root {
+  /* Colores principales */
+  --color-bg:           #0f0f13;
+  --color-bg-secondary: #1a1a22;
+  --color-bg-card:      #1e1e28;
+  --color-border:       #2e2e3a;
+  --color-text:         #e8e8f0;
+  --color-text-muted:   #8888aa;
+  --color-primary:      #7c5cfc;
+  --color-primary-hover:#9b7fff;
+  --color-accent:       #f0a500;
+  --color-success:      #22c55e;
+  --color-danger:       #ef4444;
+
+  /* Tipografía */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Espaciado */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reset básico */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+body { min-height: 100vh; }
+img, svg { display: block; max-width: 100%; }
+input, button, textarea, select { font: inherit; }
+p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Utilidades básicas */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+/* ── Transparencia global de contenedores de página ──
+   Los fondos animados (AppBackground, BinaryRain) se
+   ven a través de las páginas. Los cards y paneles
+   internos mantienen sus propios backgrounds. */
+#root {
+  background: transparent;
+  position: relative;
+}
