@@ -11,8 +11,10 @@ Flujo:
 """
 
 import json
+import time
 from typing import Optional
 from google import genai
+from google.genai import errors
 
 from config import GEMINI_API_KEY
 
@@ -136,18 +138,34 @@ def _call_gemini(system_prompt: str, user_message: str) -> str:
     Centraliza todas las llamadas a Gemini.
     Gemini no tiene parámetro 'system' nativo en el SDK básico,
     así que lo inyectamos como prefijo del mensaje del usuario.
+    Incluye reintentos automáticos para errores 503 (alta demanda).
 
     Returns:
         El texto crudo de la respuesta.
     """
     full_prompt = f"{system_prompt}\n\n---\n\n{user_message}"
 
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=full_prompt
-    )
+    max_retries = 3
+    base_delay = 2  # segundos
 
-    return response.text.strip()
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=full_prompt
+            )
+            return response.text.strip()
+
+        except errors.ServerError as e:
+            if e.code == 503 and attempt < max_retries - 1:
+                delay = base_delay * (2 ** attempt)  # backoff exponencial: 2s, 4s, 8s
+                print(f"Gemini 503 (intento {attempt + 1}/{max_retries}). Reintentando en {delay}s...")
+                time.sleep(delay)
+                continue
+            raise
+        except Exception as e:
+            # Otros errores no se reintentan
+            raise
 
 
 # ---------------------------------------------------------------------------
@@ -157,7 +175,8 @@ def _call_gemini(system_prompt: str, user_message: str) -> str:
 def generate_structure(
     prompt: str,
     num_slides: Optional[int] = None,
-    language: str = "es"
+    language: str = "es",
+    instructions: Optional[str] = None
 ) -> dict:
     """
     Llamado a Gemini: analiza el prompt y devuelve la estructura
@@ -170,6 +189,13 @@ def generate_structure(
         user_message += f"\nCantidad de slides solicitada: {num_slides}"
 
     user_message += f"\nIdioma preferido: {language}"
+
+    # ── Instrucciones personalizadas del usuario ──
+    if instructions and instructions.strip():
+        user_message += (
+            f"\n\nInstrucciones personalizadas del autor (respetalas SIEMPRE):\n"
+            f"{instructions.strip()}"
+        )
 
     raw_text = _call_gemini(STRUCTURE_SYSTEM_PROMPT, user_message)
 
@@ -195,10 +221,14 @@ def generate_structure(
     if not isinstance(structure["slides"], list) or len(structure["slides"]) == 0:
         raise ValueError("La estructura no contiene slides válidos.")
 
-    return structure
+    # Incluimos las instrucciones en la estructura para que persistan en el flujo de dos pasos
+    return {
+        **structure,
+        "instructions": instructions
+    }
 
 
-def generate_slides_content(structure: dict) -> list[dict]:
+def generate_slides_content(structure: dict, instructions: Optional[str] = None) -> list[dict]:
     """
     Llamado a Gemini: toma la estructura y genera el contenido
     completo de todos los slides en un único llamado (batch).
@@ -208,6 +238,14 @@ def generate_slides_content(structure: dict) -> list[dict]:
         f"Enriquece el contenido de esta presentación:\n\n"
         f"{json.dumps(structure, ensure_ascii=False, indent=2)}"
     )
+
+    # ── Instrucciones personalizadas del usuario ──
+    actual_instructions = instructions or structure.get("instructions")
+    if actual_instructions and actual_instructions.strip():
+        user_message += (
+            f"\n\nInstrucciones personalizadas del autor (respetalas SIEMPRE):\n"
+            f"{actual_instructions.strip()}"
+        )
 
     raw_text = _call_gemini(CONTENT_SYSTEM_PROMPT, user_message)
     raw_text = _strip_code_fences(raw_text)
@@ -259,6 +297,10 @@ def assemble_presentation(structure: dict, enriched_slides: list[dict]) -> dict:
         "audience":         structure.get("audience", ""),
         "theme_suggestion": structure.get("theme_suggestion", "modern"),
         "theme":            THEME_MAP.get(structure.get("theme_suggestion", "").lower(), "Minimal"),
+        "background":       BACKGROUND_MAP.get(
+                                THEME_MAP.get(structure.get("theme_suggestion", "").lower(), "Minimal"),
+                                "aurora"
+                            ),
         "slides":           assembled_slides,
     }
 
@@ -271,6 +313,16 @@ THEME_MAP = {
     "corporate": "Corporate",
     "creative": "Creative",
     "academic": "Academic",
+}
+
+# Tema del frontend → fondo decorativo por defecto
+# Así ninguna presentación nueva queda sin color ni figuras.
+BACKGROUND_MAP = {
+    "Minimal":    "pearl",
+    "Dark Mode":  "aurora",
+    "Corporate":  "ocean",
+    "Creative":   "sunset",
+    "Academic":   "forest",
 }
 
 
@@ -299,7 +351,8 @@ def _strip_code_fences(text: str) -> str:
 def generate_presentation(
     prompt: str,
     num_slides: Optional[int] = None,
-    language: str = "es"
+    language: str = "es",
+    instructions: Optional[str] = None
 ) -> dict:
     """
     Orquestador principal. Ejecuta el flujo completo de generación en dos pasos.
@@ -309,11 +362,12 @@ def generate_presentation(
     structure = generate_structure(
         prompt=prompt,
         num_slides=num_slides,
-        language=language
+        language=language,
+        instructions=instructions
     )
 
     # ── Paso 2: Contenido ─────────────────────────────────────────────────
-    enriched_slides = generate_slides_content(structure)
+    enriched_slides = generate_slides_content(structure, instructions=instructions)
 
 
     # ── Paso 3: Ensamblado ────────────────────────────────────────────────

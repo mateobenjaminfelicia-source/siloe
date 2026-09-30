@@ -194,6 +194,7 @@ export default function SharedPresentationPage() {
             <SlideCanvas
               slide={activeSlide}
               theme={presentation?.theme}
+              background={presentation?.background}
               readonly
             />
           )}

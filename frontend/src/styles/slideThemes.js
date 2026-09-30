@@ -1,0 +1,162 @@
+// ================================================
+//  SILOÉ — Estilos visuales de slides
+//  Temas base + fondos decorativos estilo Claude
+//  (degradados + círculos y figuras geométricas).
+// ================================================
+
+// Paleta base por tema (se usa cuando no hay fondo especial)
+const THEMES = {
+  'Minimal':    { bg: '#FFFFFF', text: '#1A1A1A', accent: '#4F46E5', muted: '#666666' },
+  'Dark Mode':  { bg: '#0F0F0F', text: '#F5F5F5', accent: '#7C3AED', muted: '#AAAAAA' },
+  'Corporate':  { bg: '#F8F9FA', text: '#212529', accent: '#0D6EFD', muted: '#6C757D' },
+  'Creative':   { bg: '#FFF7ED', text: '#1C1917', accent: '#EA580C', muted: '#78716C' },
+  'Academic':   { bg: '#F0F4F8', text: '#1A202C', accent: '#2B6CB0', muted: '#4A5568' },
+}
+
+// Fondos decorativos (estilo Claude): cada uno define un degradado,
+// los colores de texto/acento y las figuras geométricas que lo acompañan.
+export const BACKGROUNDS = {
+  aurora: {
+    label: 'Aurora',
+    bg:    'linear-gradient(140deg, #0f172a 0%, #1e1b4b 45%, #3b0764 100%)',
+    text:  '#FFFFFF',
+    muted: 'rgba(255,255,255,0.60)',
+    accent:'#c084fc',
+    shapes: [
+      { kind: 'circle', top: '-12%',  left: '-10%', size: '50%', color: 'rgba(192,132,252,0.40)', blur: '70px' },
+      { kind: 'circle', bottom: '-18%', right: '-8%', size: '55%', color: 'rgba(59,130,246,0.35)', blur: '70px' },
+      { kind: 'circle', top: '-20%',  right: '-6%', size: '35%', color: 'rgba(236,72,153,0.20)', blur: '70px' },
+      { kind: 'ring',  top: '18%',    right: '12%', size: '90px', color: 'rgba(255,255,255,0.10)', border: '1px' },
+      { kind: 'dot',   top: '26%',    right: '24%', size: '12px', color: 'rgba(255,255,255,0.40)' },
+      { kind: 'dot',   top: '72%',    left: '14%',  size: '10px', color: 'rgba(255,255,255,0.30)' },
+    ],
+  },
+  ocean: {
+    label: 'Océano',
+    bg:    'linear-gradient(150deg, #082f49 0%, #075985 45%, #0ea5e9 100%)',
+    text:  '#FFFFFF',
+    muted: 'rgba(255,255,255,0.60)',
+    accent:'#7dd3fc',
+    shapes: [
+      { kind: 'circle', top: '-15%',  right: '-8%', size: '55%', color: 'rgba(14,165,233,0.35)', blur: '70px' },
+      { kind: 'circle', bottom: '-15%', left: '-8%', size: '50%', color: 'rgba(6,182,212,0.25)', blur: '70px' },
+      { kind: 'ring',   top: '16%',   left: '18%',  size: '80px', color: 'rgba(255,255,255,0.10)', border: '1px' },
+      { kind: 'ring',   bottom: '14%', right: '16%', size: '60px', color: 'rgba(255,255,255,0.06)', border: '1px' },
+      { kind: 'dot',    top: '68%',   left: '26%',  size: '10px', color: 'rgba(255,255,255,0.30)' },
+    ],
+  },
+  sunset: {
+    label: 'Atardecer',
+    bg:    'linear-gradient(140deg, #450a0a 0%, #991b1b 45%, #f97316 100%)',
+    text:  '#FFFFFF',
+    muted: 'rgba(255,255,255,0.60)',
+    accent:'#fdba74',
+    shapes: [
+      { kind: 'circle', top: '-20%',  left: '20%',  size: '55%', color: 'rgba(253,186,116,0.35)', blur: '80px' },
+      { kind: 'circle', bottom: '-20%', right: '-10%', size: '50%', color: 'rgba(249,115,22,0.35)', blur: '70px' },
+      { kind: 'ring',   bottom: '16%', left: '14%',  size: '90px', color: 'rgba(255,237,213,0.10)', border: '1px' },
+      { kind: 'dot',    top: '24%',   right: '16%', size: '12px', color: 'rgba(255,237,213,0.40)' },
+    ],
+  },
+  forest: {
+    label: 'Bosque',
+    bg:    'linear-gradient(140deg, #064e3b 0%, #065f46 45%, #10b981 100%)',
+    text:  '#FFFFFF',
+    muted: 'rgba(255,255,255,0.60)',
+    accent:'#a7f3d0',
+    shapes: [
+      { kind: 'circle', top: '-14%',  right: '-10%', size: '55%', color: 'rgba(16,185,129,0.30)', blur: '70px' },
+      { kind: 'circle', bottom: '-18%', left: '-10%', size: '50%', color: 'rgba(52,211,153,0.22)', blur: '70px' },
+      { kind: 'ring',   top: '20%',   left: '16%',   size: '90px', color: 'rgba(209,250,229,0.10)', border: '1px' },
+      { kind: 'dot',    bottom: '26%', right: '20%', size: '11px', color: 'rgba(255,255,255,0.30)' },
+    ],
+  },
+  pearl: {
+    label: 'Perla',
+    bg:    'linear-gradient(140deg, #fdf2f8 0%, #f0f9ff 50%, #f5f3ff 100%)',
+    text:  '#1e1b4b',
+    muted: '#6b7280',
+    accent:'#6366f1',
+    shapes: [
+      { kind: 'circle', top: '-18%',  right: '-10%', size: '50%', color: 'rgba(167,139,250,0.25)', blur: '70px' },
+      { kind: 'circle', bottom: '-18%', left: '-8%', size: '50%', color: 'rgba(125,211,252,0.20)', blur: '70px' },
+      { kind: 'ring',   top: '22%',   left: '18%',   size: '80px', color: 'rgba(99,102,241,0.15)', border: '1px' },
+      { kind: 'dot',    top: '30%',   left: '26%',   size: '10px', color: 'rgba(99,102,241,0.35)' },
+      { kind: 'dot',    bottom: '24%', right: '18%', size: '11px', color: 'rgba(14,116,144,0.25)' },
+    ],
+  },
+  celeste: {
+    label: 'Celeste',
+    bg:    'linear-gradient(140deg, #e0f2fe 0%, #bae6fd 45%, #7dd3fc 100%)',
+    text:  '#0369a1',
+    muted: '#0ea5e9',
+    accent:'#0284c7',
+    shapes: [
+      { kind: 'circle', top: '-10%',  left: '-5%', size: '45%', color: 'rgba(186,230,253,0.60)', blur: '60px' },
+      { kind: 'circle', bottom: '-15%', right: '-5%', size: '50%', color: 'rgba(125,211,252,0.50)', blur: '60px' },
+      { kind: 'ring',   top: '20%',   left: '15%',   size: '100px', color: 'rgba(255,255,255,0.40)', border: '2px' },
+      { kind: 'dot',    top: '30%',   right: '20%',  size: '12px', color: 'rgba(255,255,255,0.60)' },
+    ],
+  },
+  noir: {
+    label: 'Noir',
+    bg:    'linear-gradient(140deg, #000000 0%, #0a0a0a 50%, #1a1a1a 100%)',
+    text:  '#FFFFFF',
+    muted: 'rgba(255,255,255,0.50)',
+    accent:'#FFFFFF',
+    shapes: [
+      { kind: 'circle', top: '-15%',  right: '-8%', size: '50%', color: 'rgba(255,255,255,0.05)', blur: '70px' },
+      { kind: 'circle', bottom: '-15%', left: '-8%', size: '45%', color: 'rgba(255,255,255,0.03)', blur: '70px' },
+      { kind: 'ring',   top: '18%',   left: '20%',  size: '80px', color: 'rgba(255,255,255,0.08)', border: '1px' },
+    ],
+  },
+}
+
+export const BACKGROUND_LIST = [
+  { value: '', label: 'Tema / Sin fondo' },
+  ...Object.entries(BACKGROUNDS).map(([value, bg]) => ({ value, label: bg.label })),
+]
+
+export const THEME_LIST = [
+  { value: 'Minimal',    label: 'Minimal' },
+  { value: 'Dark Mode',  label: 'Dark Mode' },
+  { value: 'Corporate',  label: 'Corporate' },
+  { value: 'Creative',   label: 'Creative' },
+  { value: 'Academic',   label: 'Academic' },
+]
+
+export function getBackgroundInfo(value) {
+  return BACKGROUNDS[value] || null
+}
+
+// Resuelve el estilo visual de un slide.
+// Si hay fondo decorativo se usa ese; si no, la paleta del tema.
+// En ambos casos el slide siempre lleva figuras geométricas:
+// ninguna presentación queda sin color ni formas.
+// Devuelve: { bg, text, accent, muted, shapes }
+export function resolveSlideStyle(theme, background) {
+  if (background && BACKGROUNDS[background]) {
+    const b = BACKGROUNDS[background]
+    return { bg: b.bg, text: b.text, accent: b.accent, muted: b.muted, shapes: b.shapes }
+  }
+  const t = THEMES[theme] || THEMES['Minimal']
+  const accent = t.accent
+  return {
+    bg: t.bg,
+    text: t.text,
+    accent: t.accent,
+    muted: t.muted,
+    shapes: themeShapes(accent),
+  }
+}
+
+// Formas sutiles basadas en el color de acento del tema
+// (los fondos especiales usan las suyas propias).
+function themeShapes(accent) {
+  return [
+    { kind: 'circle', bottom: '-18%', right: '-8%', size: '42%', color: `${accent}1A`, blur: '70px' },
+    { kind: 'ring',   top: '14%',    left: '16%',   size: '72px', color: `${accent}24`, border: '1px' },
+    { kind: 'dot',    top: '70%',    left: '20%',   size: '9px',  color: `${accent}55` },
+    { kind: 'dot',    top: '30%',    right: '18%',  size: '11px', color: `${accent}33` },
+  ]
+}

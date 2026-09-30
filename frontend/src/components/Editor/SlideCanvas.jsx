@@ -11,34 +11,50 @@
 //  lo que causaría re-renders innecesarios.
 //
 //  Props:
-//    slide:    objeto del slide activo
-//    theme:    nombre del tema ('Minimal', 'Dark Mode', etc.)
-//    onUpdate: fn(changes) — actualiza el slide en Editor.jsx
+//    slide:      objeto del slide activo
+//    theme:      nombre del tema ('Minimal', 'Dark Mode', etc.)
+//    background: fondo decorativo ('aurora', 'ocean', ... o '' para tema)
+//    onUpdate:   fn(changes) — actualiza el slide en Editor.jsx
+//    readonly:   modo presentación (sin edición)
 // ================================================
 
-// Paleta de colores por tema
-// Cada tema define fondo, texto principal y acento
-const THEMES = {
-  'Minimal':    { bg: '#FFFFFF', text: '#1A1A1A', accent: '#4F46E5', muted: '#666666' },
-  'Dark Mode':  { bg: '#0F0F0F', text: '#F5F5F5', accent: '#7C3AED', muted: '#AAAAAA' },
-  'Corporate':  { bg: '#F8F9FA', text: '#212529', accent: '#0D6EFD', muted: '#6C757D' },
-  'Creative':   { bg: '#FFF7ED', text: '#1C1917', accent: '#EA580C', muted: '#78716C' },
-  'Academic':   { bg: '#F0F4F8', text: '#1A202C', accent: '#2B6CB0', muted: '#4A5568' },
-}
+import { resolveSlideStyle, BACKGROUNDS } from '../../styles/slideThemes'
 
-export default function SlideCanvas({ slide, theme = 'Minimal', onUpdate, readonly = false }) {
-  const colors = THEMES[theme] || THEMES['Minimal']
+export default function SlideCanvas({ slide, theme = 'Minimal', background = '', onUpdate, readonly = false }) {
+  const style = resolveSlideStyle(theme, background)
+  const colors = { text: style.text, accent: style.accent, muted: style.muted }
+
+  // ── Lógica de fondos dinámicos (Variaciones) ──
+  // En lugar de cambiar el fondo, variamos la posición de las figuras
+  // basándonos en el índice del slide para que el fondo "evolucione".
+  const dynamicShapes = style.shapes.map((shape, i) => {
+    const shift = (slide.slide_order * (i + 1) * 4) % 30;
+    return {
+      ...shape,
+      top: shape.top ? `calc(${shape.top} ${shift > 15 ? '-' : '+'} ${shift}%)` : undefined,
+      left: shape.left ? `calc(${shape.left} ${shift > 10 ? '-' : '+'} ${shift}%)` : undefined,
+      right: shape.right ? `calc(${shape.right} ${shift > 20 ? '-' : '+'} ${shift}%)` : undefined,
+      bottom: shape.bottom ? `calc(${shape.bottom} ${shift > 5 ? '-' : '+'} ${shift}%)` : undefined,
+    };
+  });
 
   if (!slide) return null
 
   return (
-    <div style={{ ...s.canvas, background: colors.bg }}>
+    <div style={{ ...s.canvas, background: style.bg }}>
+
+      {/* Capa de figuras geométricas decorativas */}
+      <div style={s.decor}>
+        {dynamicShapes.map((shape, i) => (
+          <BackdropShape key={i} shape={shape} />
+        ))}
+      </div>
 
       {/* Franja de acento superior — identidad del tema */}
-      <div style={{ ...s.accentBar, background: colors.accent }} />
+      <div style={{ ...s.accentBar, background: colors.accent, position: 'relative', zIndex: 1 }} />
 
       {/* Contenido del slide según su tipo */}
-      <div style={s.content}>
+      <div style={{ ...s.content, position: 'relative', zIndex: 1 }}>
         {renderSlideContent(slide, colors, onUpdate, readonly)}
       </div>
 
@@ -48,6 +64,44 @@ export default function SlideCanvas({ slide, theme = 'Minimal', onUpdate, readon
       </div>
 
     </div>
+  )
+}
+
+// ── Figura geométrica decorativa ──
+// circle/blob: mancha desenfocada · ring: anillo · dot: punto
+function BackdropShape({ shape }) {
+  const base = { position: 'absolute', pointerEvents: 'none' }
+  if (shape.kind === 'ring') {
+    return (
+      <div style={{
+        ...base,
+        top: shape.top, bottom: shape.bottom, left: shape.left, right: shape.right,
+        width: shape.size, height: shape.size,
+        borderRadius: '50%',
+        border: `${shape.border || '2px'} solid ${shape.color}`,
+      }} />
+    )
+  }
+  if (shape.kind === 'dot') {
+    return (
+      <div style={{
+        ...base,
+        top: shape.top, left: shape.left,
+        width: shape.size, height: shape.size,
+        borderRadius: '50%',
+        background: shape.color,
+      }} />
+    )
+  }
+  return (
+    <div style={{
+      ...base,
+      top: shape.top, bottom: shape.bottom, left: shape.left, right: shape.right,
+      width: shape.size, height: shape.size,
+      borderRadius: shape.kind === 'blob' ? '38%' : '50%',
+      background: shape.color,
+      filter: `blur(${shape.blur || '60px'})`,
+    }} />
   )
 }
 
@@ -398,6 +452,12 @@ const s = {
   accentBar: {
     height:    '5px',
     flexShrink: 0,
+  },
+  decor: {
+    position: 'absolute',
+    inset:    0,
+    overflow: 'hidden',
+    pointerEvents: 'none',
   },
   content: {
     flex:     1,

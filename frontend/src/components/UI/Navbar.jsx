@@ -45,16 +45,12 @@ export default function Navbar({ credits = 0, userName = '', onLogout }) {
         {/* Centro: Links de navegación */}
         <div style={s.navLinks}>
           <Link to="/dashboard"  style={s.navLink}>Mis presentaciones</Link>
-          <Link to="/generate"   style={s.navLink}>✨ Generador</Link>
           <Link to="/community"  style={s.navLink}>Comunidad</Link>
           <Link to="/donations"  style={s.navLink}>Donaciones</Link>
         </div>
 
         {/* Derecha: Créditos + Avatar */}
         <div style={s.right}>
-          <Link to="/generate" style={s.generateBtn}>
-            ✨ Generar
-          </Link>
           {/* Badge de créditos */}
           <div style={s.creditsBadge} title="Tus créditos de IA disponibles">
             <span style={{ fontSize: '14px' }}>⚡</span>
@@ -93,6 +89,13 @@ export default function Navbar({ credits = 0, userName = '', onLogout }) {
                     onClick={() => setMenuOpen(false)}
                   >
                     📁 Mis presentaciones
+                  </Link>
+                  <Link
+                    to="/u/me"
+                    style={s.menuItem}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    👤 Mi perfil
                   </Link>
                   <button style={s.menuItemBtn} onClick={handleLogout}>
                     🚪 Cerrar sesión

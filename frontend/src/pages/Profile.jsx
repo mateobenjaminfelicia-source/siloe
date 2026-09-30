@@ -28,7 +28,10 @@ export default function ProfilePage() {
     async function load() {
       try {
         setLoading(true)
-        const response = await usersAPI.getProfile(userId)
+        // Si es "me", usa el endpoint del usuario autenticado
+        const response = userId === 'me'
+          ? await usersAPI.getMyProfile()
+          : await usersAPI.getProfile(userId)
         setProfile(response.data.user)
         setPresentations(response.data.presentations || [])
       } catch (err) {

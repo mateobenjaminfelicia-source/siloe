@@ -190,6 +190,7 @@ export default function PresenterPage() {
               <SlideCanvas
                 slide={activeSlide}
                 theme={presentation?.theme}
+                background={presentation?.background}
                 readonly
               />
             )}

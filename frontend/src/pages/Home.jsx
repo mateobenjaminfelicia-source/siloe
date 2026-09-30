@@ -69,6 +69,8 @@ export default function HomePage() {
 
   // ── Proximidad de puertas (actualizado cada frame) ──
   const [gateStates, setGateStates] = useState({})
+  const gateStatesRef = useRef({})
+  const activeGateRef = useRef(null)
   // { [id]: { screenX, screenY, dist, opacity, scale } }
 
   // ── Wave emitter ──
@@ -127,6 +129,9 @@ export default function HomePage() {
       const newGateStates = {}
       const mx = mouseRef.current.x
       const my = mouseRef.current.y
+      let closest = null
+      let minDist = Infinity
+
       dests.forEach(dest => {
         const gp = gateWorldPos(dest.angle)
         // Posición en pantalla = posición mundo + offset de cámara
@@ -145,45 +150,53 @@ export default function HomePage() {
           : 0.75
 
         newGateStates[dest.id] = { screenX, screenY, dist, opacity, scale }
+
+        // Detectar puerta más cercana (usando refs, no state)
+        if (dist < minDist) {
+          minDist = dist
+          closest = dest
+        }
       })
+      gateStatesRef.current = newGateStates
       setGateStates(newGateStates)
+
+      // Detección de fase — SOLO con refs, SIN setState aquí
+      // El changePhase se hace aparte solo cuando realmente cambia
+      if (['idle', 'approaching', 'confirming'].includes(phaseRef.current)) {
+        if (minDist < APPROACH_DIST) {
+          if (activeGateRef.current?.id !== closest?.id) {
+            activeGateRef.current = closest
+            setActiveGate(closest)
+          }
+          const newPhase = minDist < CONFIRM_DIST ? 'confirming' : 'approaching'
+          if (phaseRef.current !== newPhase) {
+            phaseRef.current = newPhase
+            setPhase(newPhase)
+          }
+        } else {
+          if (phaseRef.current !== 'idle') {
+            phaseRef.current = 'idle'
+            setPhase('idle')
+          }
+          if (activeGateRef.current !== null) {
+            activeGateRef.current = null
+            setActiveGate(null)
+          }
+        }
+      }
 
       animId = requestAnimationFrame(tick)
     }
 
     animId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(animId)
-  }, [vp, phase, dests.length])
+  }, [vp, dests.length])
 
   useEffect(() => {
     const fn = e => { mouseRef.current = { x: e.clientX, y: e.clientY } }
     window.addEventListener('mousemove', fn)
     return () => window.removeEventListener('mousemove', fn)
   }, [])
-
-  // Detectar puerta activa según distancia mouse→portal
-  // Usamos phaseRef.current para evitar closures viejos
-  useEffect(() => {
-    if (!['idle', 'approaching', 'confirming'].includes(phaseRef.current)) return
-
-    let closest = null
-    let minDist = Infinity
-    dests.forEach(dest => {
-      const gs = gateStates[dest.id]
-      if (gs && gs.dist < minDist) {
-        minDist  = gs.dist
-        closest  = dest
-      }
-    })
-
-    if (minDist < APPROACH_DIST) {
-      setActiveGate(closest)
-      changePhase(minDist < CONFIRM_DIST ? 'confirming' : 'approaching')
-    } else {
-      if (phaseRef.current !== 'idle') { changePhase('idle') }
-      setActiveGate(null)
-    }
-  }, [gateStates])
 
   // Helper para cambiar fase y mantener ref sincronizado
   const changePhase = useCallback((p) => {

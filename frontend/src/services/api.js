@@ -125,6 +125,7 @@ export const communityAPI = {
 
 export const usersAPI = {
   getProfile: (id) => api.get(`/users/${id}/profile`),
+  getMyProfile: () => api.get('/users/me/profile/'),
   getSaved:   ()   => api.get('/users/me/saved'),
   getCredits: ()   => api.get('/users/me/credits'),
 }

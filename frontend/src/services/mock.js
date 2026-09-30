@@ -25,12 +25,13 @@ const MOCK_TOKEN = 'mock-jwt-token-demo'
 const THEMES = ['Minimal', 'Dark Mode', 'Corporate', 'Creative', 'Academic']
 
 // ── Generador de presentación falsa ──
-function makeMockPresentation(id, prompt = '') {
+function makeMockPresentation(id, prompt = '', instructions = '') {
   return {
     id,
     user_id:      1,
     title:        prompt ? `Presentación: ${prompt.slice(0, 40)}` : `Presentación de ejemplo ${id}`,
     prompt_original: prompt,
+    instructions_original: instructions,
     theme:        THEMES[id % THEMES.length],
     visibility:   'private',
     is_published: id % 3 === 0,
@@ -163,7 +164,7 @@ export const mockHandlers = {
       || makeMockPresentation(Number(id))
   }),
   'POST /presentations/generate': (_, body) => {
-    const newPres = makeMockPresentation(nextId++, body?.prompt || '')
+    const newPres = makeMockPresentation(nextId++, body?.prompt || '', body?.instructions || '')
     mockPresentations.unshift(newPres)
     // Simular descuento de 1 crédito
     MOCK_USER.ai_credits = Math.max(0, MOCK_USER.ai_credits - 1)

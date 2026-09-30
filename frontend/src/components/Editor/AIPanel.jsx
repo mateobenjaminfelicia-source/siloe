@@ -78,7 +78,7 @@ export default function AIPanel({ slide, onUpdate, presentationId }) {
       // El backend llama a ai_service con el slide y la instrucción,
       // y devuelve el slide modificado como JSON.
       const response = await api.post(
-        `/presentations/${presentationId}/slides/${slide.id}/ai-edit`,
+        `/presentations/${presentationId}/slides/${slide.slide_order}/ai-edit`,
         {
           instruction: instructionText,
           current_slide: {
@@ -341,7 +341,9 @@ const s = {
   chip: {
     padding:      '5px 10px',
     background:   'var(--color-bg-secondary)',
-    border:       '1px solid var(--color-border)',
+    borderWidth:  '1px',
+    borderStyle:  'solid',
+    borderColor:  'var(--color-border)',
     borderRadius: '16px',
     fontSize:     '12px',
     color:        'var(--color-text)',
@@ -353,7 +355,9 @@ const s = {
     width:        '100%',
     padding:      '10px 12px',
     background:   'var(--color-bg-secondary)',
-    border:       '1px solid var(--color-border)',
+    borderWidth:  '1px',
+    borderStyle:  'solid',
+    borderColor:  'var(--color-border)',
     borderRadius: 'var(--radius-md)',
     color:        'var(--color-text)',
     fontSize:     '13px',
@@ -373,7 +377,9 @@ const s = {
   },
   errorBox: {
     background:   'rgba(239,68,68,0.1)',
-    border:       '1px solid var(--color-danger)',
+    borderWidth:  '1px',
+    borderStyle:  'solid',
+    borderColor:  'var(--color-danger)',
     borderRadius: 'var(--radius-md)',
     padding:      '8px 12px',
     fontSize:     '12px',
@@ -386,7 +392,9 @@ const s = {
     padding:       '8px 10px',
     background:    'var(--color-bg-secondary)',
     borderRadius:  'var(--radius-sm)',
-    border:        '1px solid var(--color-border)',
+    borderWidth:   '1px',
+    borderStyle:   'solid',
+    borderColor:   'var(--color-border)',
   },
   historyText: {
     fontSize:     '12px',

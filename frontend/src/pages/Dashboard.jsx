@@ -35,8 +35,9 @@ export default function DashboardPage() {
   const [error,         setError]         = useState('')
 
   // ── Estado del prompt de generación ──
-  const [prompt,     setPrompt]     = useState('')
-  const [generating, setGenerating] = useState(false)
+  const [prompt,        setPrompt]        = useState('')
+  const [instructions,  setInstructions]  = useState('')
+  const [generating,    setGenerating]    = useState(false)
   const [genError,   setGenError]   = useState('')
 
   // ── Carga inicial ──
@@ -81,11 +82,15 @@ export default function DashboardPage() {
     try {
       setGenerating(true)
       setGenError('')
-      const response = await presentationsAPI.generate({ prompt: prompt.trim() })
+      const response = await presentationsAPI.generate({
+        prompt: prompt.trim(),
+        instructions: instructions.trim()||undefined,
+      })
       // El backend devuelve la presentación creada con su ID
       // Navegamos directo al editor para que el usuario la vea y edite
       navigate(`/editor/${response.data.id}`)
     } catch (err) {
+      console.error('Error generando presentación:', err)
       const msg = err.response?.data?.detail || 'Error al generar. Intentá de nuevo.'
       setGenError(msg)
       setGenerating(false)
@@ -149,6 +154,17 @@ export default function DashboardPage() {
                 rows={3}
                 disabled={generating}
                 style={s.textarea}
+              />
+              <textarea
+                value={instructions}
+                onChange={e => {
+                  setInstructions(e.target.value)
+                  if (genError) setGenError('')
+                }}
+                placeholder="Instrucciones personalizadas (opcional): tono, ejemplos, enfoque, estructura, qué incluir o evitar..."
+                rows={2}
+                disabled={generating}
+                style={{ ...s.textarea, ...s.instructionsArea }}
               />
               <div style={s.formFooter}>
                 {genError && (

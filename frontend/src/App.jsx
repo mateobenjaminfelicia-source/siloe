@@ -18,7 +18,6 @@ import EditorPage         from './pages/Editor'
 import PresenterPage      from './pages/Presenter'
 import CommunityPage      from './pages/Community'
 import ProfilePage        from './pages/Profile'
-import GeneratorPage       from './pages/Generator'
 import SharedPresentationPage from './pages/SharedPresentation'
 import DonationsPage      from './pages/Donations'
 import NotFoundPage       from './pages/NotFound'
@@ -58,11 +57,9 @@ export default function App() {
         <Route path="/present/:id" element={
           <PrivateRoute><PresenterPage /></PrivateRoute>
         }/>
-        <Route path="/generate" element={
-          <PrivateRoute><GeneratorPage /></PrivateRoute>
-        }/>
 
         {/* ── 404 ── */}
+        <Route path="/generate" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<NotFoundPage />} />
 
       </Routes>
